@@ -3,7 +3,7 @@
 	"package": "outercloud.bol.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
-      "MobEntityMixin"
+		"MobEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
