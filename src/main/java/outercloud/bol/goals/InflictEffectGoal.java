@@ -7,7 +7,6 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
-import outercloud.bol.BossesOfLegend;
 
 import java.util.EnumSet;
 
