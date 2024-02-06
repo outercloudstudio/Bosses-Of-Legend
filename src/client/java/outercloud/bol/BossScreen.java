@@ -98,16 +98,18 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
             NbtCompound goalData = this.goals.get(index);
             String name = goalData.getString("name");
 
-            int x = width / 4 - 64;
+            int x = width / 2 - (128 + 8 + 64 + 8 + 64) / 2;
             int y = 16 + 16 + index * 24;
 
             goalElements.add(addDrawableChild(ButtonWidget.builder(Text.of(name), widget -> {
 
             }).dimensions(x, y, 128, 16).build()));
+            x += 128 + 8;
 
             goalElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Duplicate"), widget -> {
 
-            }).dimensions(x + 72 + 64, y, 64, 16).build()));
+            }).dimensions(x, y, 64, 16).build()));
+            x += 64 + 8;
 
             int currentIndex = index;
             goalElements.add( addDrawableChild(ButtonWidget.builder(Text.of("Delete"), widget -> {
@@ -116,7 +118,7 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
                 goals.remove(currentIndex);
 
                 createGoalButtons();
-            }).dimensions(x + 72 + 16 + 32 + 16 + 32 + 32 + 8, y, 64, 16).build()));
+            }).dimensions(x, y, 64, 16).build()));
         }
     }
 }
