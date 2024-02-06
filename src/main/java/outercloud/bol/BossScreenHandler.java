@@ -95,17 +95,6 @@ public class BossScreenHandler extends ScreenHandler {
 
         BossesOfLegend.LOGGER.info(String.valueOf(goalSelector.getGoals().stream().toList().get(packet.index)));
 
-        int index = 0;
-        for(PrioritizedGoal goal: goalSelector.getGoals()) {
-            if(index != packet.index) {
-                index++;
-
-                continue;
-            }
-
-            goalSelector.remove(goal.getGoal());
-
-            index++;
-        }
+        goalSelector.remove(goalSelector.getGoals().stream().toList().get(packet.index).getGoal());
     }
 }
