@@ -20,6 +20,7 @@ import net.minecraft.util.Identifier;
 import outercloud.bol.mixinBridge.MobEntityMixinBridge;
 import outercloud.bol.packets.BossScreenDataPacket;
 import outercloud.bol.packets.BossScreenReadyPacket;
+import outercloud.bol.packets.ConvertGoalPacket;
 import outercloud.bol.packets.DeleteGoalPacket;
 
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ public class BossScreenHandler extends ScreenHandler {
 
         ServerPlayNetworking.registerReceiver(player.networkHandler, BossScreenReadyPacket.TYPE, this::receiveReady);
         ServerPlayNetworking.registerReceiver(player.networkHandler, DeleteGoalPacket.TYPE, this::receiveDeleteGoal);
+        ServerPlayNetworking.registerReceiver(player.networkHandler, ConvertGoalPacket.TYPE, this::receiveConvertGoal);
     }
 
     public BossScreenHandler(int syncId, PlayerInventory playerInventory) {
@@ -67,6 +69,7 @@ public class BossScreenHandler extends ScreenHandler {
 
         ServerPlayNetworking.unregisterReceiver(this.player.networkHandler, BossScreenReadyPacket.TYPE);
         ServerPlayNetworking.unregisterReceiver(this.player.networkHandler, DeleteGoalPacket.TYPE);
+        ServerPlayNetworking.unregisterReceiver(this.player.networkHandler, ConvertGoalPacket.TYPE);
     }
 
     private void receiveReady(BossScreenReadyPacket packet, ServerPlayerEntity player, PacketSender responseSender) {
@@ -81,6 +84,7 @@ public class BossScreenHandler extends ScreenHandler {
             NbtCompound compound = new NbtCompound();
             compound.putInt("priority", priority);
             compound.putString("name", goal.getClass().getSimpleName());
+            compound.putBoolean("original", ((MobEntityMixinBridge) entity).getGoalIsOriginal(prioritizedGoal));
 
             goalsData.add(compound);
         }
@@ -89,12 +93,14 @@ public class BossScreenHandler extends ScreenHandler {
     }
 
     private void receiveDeleteGoal(DeleteGoalPacket packet, ServerPlayerEntity player, PacketSender responseSender) {
-        BossesOfLegend.LOGGER.info("Received Delete Goal Packet");
-
         GoalSelector goalSelector = ((MobEntityMixinBridge) entity).getGoalSelector();
 
-        BossesOfLegend.LOGGER.info(String.valueOf(goalSelector.getGoals().stream().toList().get(packet.index)));
-
         goalSelector.remove(goalSelector.getGoals().stream().toList().get(packet.index).getGoal());
+    }
+
+    private void receiveConvertGoal(ConvertGoalPacket packet, ServerPlayerEntity player, PacketSender responseSender) {
+        GoalSelector goalSelector = ((MobEntityMixinBridge) entity).getGoalSelector();
+
+        ((MobEntityMixinBridge) entity).convertGoal(goalSelector.getGoals().stream().toList().get(packet.index));
     }
 }

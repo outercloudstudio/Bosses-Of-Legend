@@ -14,8 +14,10 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import outercloud.bol.mixin.client.ScreenMixin;
+import outercloud.bol.mixinBridge.MobEntityMixinBridge;
 import outercloud.bol.packets.BossScreenDataPacket;
 import outercloud.bol.packets.BossScreenReadyPacket;
+import outercloud.bol.packets.ConvertGoalPacket;
 import outercloud.bol.packets.DeleteGoalPacket;
 
 import java.util.ArrayList;
@@ -97,28 +99,47 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
         for(int index = 0; index < Math.min(this.goals.size(), goalsToDisplay); index++) {
             NbtCompound goalData = this.goals.get(index);
             String name = goalData.getString("name");
+            boolean original = goalData.getBoolean("original");
 
             int x = width / 2 - (128 + 8 + 64 + 8 + 64) / 2;
             int y = 16 + 16 + index * 24;
 
-            goalElements.add(addDrawableChild(ButtonWidget.builder(Text.of(name), widget -> {
+            if(!original) {
+                goalElements.add(addDrawableChild(ButtonWidget.builder(Text.of(name), widget -> {
 
-            }).dimensions(x, y, 128, 16).build()));
-            x += 128 + 8;
+                }).dimensions(x, y, 128, 16).build()));
+                x += 128 + 8;
 
-            goalElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Duplicate"), widget -> {
+                goalElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Duplicate"), widget -> {
 
-            }).dimensions(x, y, 64, 16).build()));
-            x += 64 + 8;
+                }).dimensions(x, y, 64, 16).build()));
+                x += 64 + 8;
 
-            int currentIndex = index;
-            goalElements.add( addDrawableChild(ButtonWidget.builder(Text.of("Delete"), widget -> {
-                ClientPlayNetworking.send(new DeleteGoalPacket(currentIndex));
+                int currentIndex = index;
+                goalElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Delete"), widget -> {
+                    ClientPlayNetworking.send(new DeleteGoalPacket(currentIndex));
 
-                goals.remove(currentIndex);
+                    goals.remove(currentIndex);
 
-                createGoalButtons();
-            }).dimensions(x, y, 64, 16).build()));
+                    createGoalButtons();
+                }).dimensions(x, y, 64, 16).build()));
+            } else {
+                goalElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Default: " + name), widget -> {
+
+                }).dimensions(x, y, 128, 16).build()));
+                x += 128 + 8;
+
+                int currentIndex = index;
+
+                goalElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Convert"), widget -> {
+                    ClientPlayNetworking.send(new ConvertGoalPacket(currentIndex));
+
+                    goals.get(currentIndex).putBoolean("original", false);
+
+                    createGoalButtons();
+                }).dimensions(x, y, 64, 16).build()));
+                x += 64 + 8;
+            }
         }
     }
 }
