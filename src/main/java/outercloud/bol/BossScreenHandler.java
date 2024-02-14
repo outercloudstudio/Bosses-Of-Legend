@@ -72,7 +72,7 @@ public class BossScreenHandler extends ScreenHandler {
         ServerPlayNetworking.unregisterReceiver(this.player.networkHandler, ConvertGoalPacket.TYPE);
     }
 
-    private void receiveReady(BossScreenReadyPacket packet, ServerPlayerEntity player, PacketSender responseSender) {
+    private void sendData(ServerPlayerEntity player) {
         ArrayList<NbtCompound> goalsData = new ArrayList<>();
 
         GoalSelector goalSelector = ((MobEntityMixinBridge) entity).getGoalSelector();
@@ -92,15 +92,23 @@ public class BossScreenHandler extends ScreenHandler {
         ServerPlayNetworking.send(player, new BossScreenDataPacket(goalsData));
     }
 
+    private void receiveReady(BossScreenReadyPacket packet, ServerPlayerEntity player, PacketSender responseSender) {
+        sendData(player);
+    }
+
     private void receiveDeleteGoal(DeleteGoalPacket packet, ServerPlayerEntity player, PacketSender responseSender) {
         GoalSelector goalSelector = ((MobEntityMixinBridge) entity).getGoalSelector();
 
-        goalSelector.remove(goalSelector.getGoals().stream().toList().get(packet.index).getGoal());
+        ((MobEntityMixinBridge) entity).removeGoal(goalSelector.getGoals().stream().toList().get(packet.index));
+
+        sendData(player);
     }
 
     private void receiveConvertGoal(ConvertGoalPacket packet, ServerPlayerEntity player, PacketSender responseSender) {
         GoalSelector goalSelector = ((MobEntityMixinBridge) entity).getGoalSelector();
 
         ((MobEntityMixinBridge) entity).convertGoal(goalSelector.getGoals().stream().toList().get(packet.index));
+
+        sendData(player);
     }
 }

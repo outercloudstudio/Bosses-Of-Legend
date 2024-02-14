@@ -8,5 +8,7 @@ public interface MobEntityMixinBridge {
 
     boolean getGoalIsOriginal(PrioritizedGoal prioritizedGoal);
 
+    void removeGoal(PrioritizedGoal prioritizedGoal);
+
     void convertGoal(PrioritizedGoal prioritizedGoal);
 }

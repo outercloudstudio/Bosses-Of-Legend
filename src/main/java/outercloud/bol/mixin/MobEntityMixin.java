@@ -75,7 +75,7 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 			}
 
 			for(PrioritizedGoal goal: goalsToRemove) {
-				goalSelector.remove(goal);
+				goalSelector.remove(goal.getGoal());
 			}
 		}
 
@@ -100,11 +100,22 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 		return originalGoals.contains(prioritizedGoal) && !convertedGoals.contains(originalGoals.indexOf(prioritizedGoal));
 	}
 
+	public void removeGoal(PrioritizedGoal prioritizedGoal) {
+		GoalSelector goalSelector = getGoalSelector();
+
+		goalSelector.remove(prioritizedGoal.getGoal());
+
+		customGoals.remove(prioritizedGoal);
+
+		BossesOfLegend.LOGGER.info("Removed: " + prioritizedGoal.getGoal().getClass().getSimpleName());
+	}
+
 	public void convertGoal(PrioritizedGoal prioritizedGoal) {
 		convertedGoals.add(originalGoals.indexOf(prioritizedGoal));
 
 		GoalSelector goalSelector = getGoalSelector();
-		goalSelector.remove(prioritizedGoal);
+
+		goalSelector.remove(prioritizedGoal.getGoal());
 
 		NbtCompound serializedGoal = GoalSerializer.serialize(prioritizedGoal);
 		PrioritizedGoal deserializedGoal = GoalSerializer.deserialize(serializedGoal);
@@ -116,6 +127,8 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 		}
 
 		customGoals.add(deserializedGoal);
+
+		goalSelector.add(deserializedGoal.getPriority(), deserializedGoal.getGoal());
 
 		BossesOfLegend.LOGGER.info("Converted: " + prioritizedGoal.getGoal().getClass().getSimpleName());
 	}

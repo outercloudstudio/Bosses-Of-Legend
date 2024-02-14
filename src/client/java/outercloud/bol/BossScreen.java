@@ -119,7 +119,7 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
                 goalElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Delete"), widget -> {
                     ClientPlayNetworking.send(new DeleteGoalPacket(currentIndex));
 
-                    goals.remove(currentIndex);
+                    goals = new ArrayList<>();
 
                     createGoalButtons();
                 }).dimensions(x, y, 64, 16).build()));
@@ -134,7 +134,7 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
                 goalElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Convert"), widget -> {
                     ClientPlayNetworking.send(new ConvertGoalPacket(currentIndex));
 
-                    goals.get(currentIndex).putBoolean("original", false);
+                    goals = new ArrayList<>();
 
                     createGoalButtons();
                 }).dimensions(x, y, 64, 16).build()));
