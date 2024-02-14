@@ -47,4 +47,8 @@ public class InflictEffectGoal extends Goal implements SerializableGoal {
     public Identifier getIdentifier() {
         return IDENTIFIER;
     }
+
+    public static SerializableGoal deserialize(MobEntity mobEntity, NbtCompound nbt) {
+        return new InflictEffectGoal(mobEntity);
+    }
 }

@@ -8,7 +8,5 @@ public interface SerializableGoal {
         return new NbtCompound();
     }
 
-    default void deserialize(NbtCompound nbt) {}
-
     Identifier getIdentifier();
 }

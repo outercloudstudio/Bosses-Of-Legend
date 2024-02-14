@@ -20,7 +20,7 @@ public class BossesOfLegend implements ModInitializer {
 
 		BossScreenHandler.register();
 
-		GoalSerializer.register(EmptyGoal.IDENTIFIER,  EmptyGoal.class);
-		GoalSerializer.register(InflictEffectGoal.IDENTIFIER,  InflictEffectGoal.class);
+		GoalSerializer.register(EmptyGoal.IDENTIFIER,  EmptyGoal::deserialize);
+		GoalSerializer.register(InflictEffectGoal.IDENTIFIER,  InflictEffectGoal::deserialize);
 	}
 }

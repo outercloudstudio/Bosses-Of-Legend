@@ -83,7 +83,7 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 
 		if(customGoalDatas != null) {
 			for(NbtElement nbtElement: customGoalDatas) {
-				PrioritizedGoal deserializedGoal = GoalSerializer.deserialize((NbtCompound) nbtElement);
+				PrioritizedGoal deserializedGoal = GoalSerializer.deserialize((MobEntity) (Object) this, (NbtCompound) nbtElement);
 
 				if(deserializedGoal == null) {
 					BossesOfLegend.LOGGER.error("Failed to serialized goal when loading: " + ((NbtCompound) nbtElement).getString("identifier"));
@@ -118,7 +118,7 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 		goalSelector.remove(prioritizedGoal.getGoal());
 
 		NbtCompound serializedGoal = GoalSerializer.serialize(prioritizedGoal);
-		PrioritizedGoal deserializedGoal = GoalSerializer.deserialize(serializedGoal);
+		PrioritizedGoal deserializedGoal = GoalSerializer.deserialize((MobEntity) (Object) this, serializedGoal);
 
 		if(deserializedGoal == null) {
 			BossesOfLegend.LOGGER.error("Failed to serialized goal when converting: " + prioritizedGoal.getGoal().getClass().getSimpleName());
