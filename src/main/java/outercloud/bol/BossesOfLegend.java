@@ -7,6 +7,8 @@ import net.minecraft.resource.featuretoggle.FeatureFlags;
 import net.minecraft.screen.ScreenHandlerType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import outercloud.bol.goals.GoalSerializer;
+import outercloud.bol.goals.InflictEffectGoal;
 
 public class BossesOfLegend implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("bosses-of-legend");
@@ -16,5 +18,7 @@ public class BossesOfLegend implements ModInitializer {
 		CommandRegistrationCallback.EVENT.register(Commands::register);
 
 		BossScreenHandler.register();
+
+		GoalSerializer.register(InflictEffectGoal.IDENTIFIER,  InflictEffectGoal.class);
 	}
 }

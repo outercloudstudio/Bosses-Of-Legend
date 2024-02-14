@@ -5,12 +5,16 @@ import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
 
 import java.util.EnumSet;
 
-public class InflictEffectGoal extends Goal {
+public class InflictEffectGoal extends Goal implements SerializableGoal {
+    public static final Identifier IDENTIFIER = new Identifier("bol", "inflict_effect");
+
     private final MobEntity mob;
     
     public InflictEffectGoal(MobEntity mob) {
@@ -37,5 +41,20 @@ public class InflictEffectGoal extends Goal {
     @Override
     public boolean shouldContinue() {
         return false;
+    }
+
+    @Override
+    public NbtCompound serialize() {
+        return new NbtCompound();
+    }
+
+    @Override
+    public void deserialize(NbtCompound nbt) {
+
+    }
+
+    @Override
+    public Identifier getIdentifier() {
+        return IDENTIFIER;
     }
 }

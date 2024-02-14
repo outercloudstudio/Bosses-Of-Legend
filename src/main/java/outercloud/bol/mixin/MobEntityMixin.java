@@ -4,13 +4,16 @@ import net.minecraft.entity.ai.goal.GoalSelector;
 import net.minecraft.entity.ai.goal.PrioritizedGoal;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import outercloud.bol.BossesOfLegend;
+import outercloud.bol.goals.GoalSerializer;
 import outercloud.bol.goals.InflictEffectGoal;
+import outercloud.bol.goals.SerializableGoal;
 import outercloud.bol.mixinBridge.MobEntityMixinBridge;
 
 import java.util.ArrayList;
@@ -23,6 +26,7 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 
 	private ArrayList<PrioritizedGoal> originalGoals = new ArrayList<PrioritizedGoal>();
 	private ArrayList<Integer> convertedGoals = new ArrayList<Integer>();
+	private ArrayList<PrioritizedGoal> customGoals = new ArrayList<>();
 
 	@Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/entity/EntityType;Lnet/minecraft/world/World;)V")
 	private void init(CallbackInfo info) {
@@ -40,6 +44,16 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 	@Inject(at = @At("TAIL"), method = "writeCustomDataToNbt")
 	private void writeNbt(NbtCompound nbt, CallbackInfo ci) {
 		nbt.putIntArray("convertedGoals", convertedGoals);
+
+//		NbtList goalDatas = new NbtList();
+//
+//		for(PrioritizedGoal prioritizedGoal: customGoals) {
+//			NbtCompound goalData = GoalSerializer.serialize(prioritizedGoal);
+//
+//			goalDatas.add(goalData);
+//		}
+//
+//		nbt.put("customGoals", goalDatas);
 	}
 
 	@Inject(at = @At("TAIL"), method = "readCustomDataFromNbt")
