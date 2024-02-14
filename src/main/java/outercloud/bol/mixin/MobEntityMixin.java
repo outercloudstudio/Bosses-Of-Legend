@@ -4,6 +4,7 @@ import net.minecraft.entity.ai.goal.GoalSelector;
 import net.minecraft.entity.ai.goal.PrioritizedGoal;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
@@ -38,30 +39,60 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 
 		originalGoals.addAll(goalSelector.getGoals());
 
-		goalSelector.add(1, new InflictEffectGoal(me));
+//		goalSelector.add(1, new InflictEffectGoal(me));
 	}
 
 	@Inject(at = @At("TAIL"), method = "writeCustomDataToNbt")
 	private void writeNbt(NbtCompound nbt, CallbackInfo ci) {
 		nbt.putIntArray("convertedGoals", convertedGoals);
 
-//		NbtList goalDatas = new NbtList();
-//
-//		for(PrioritizedGoal prioritizedGoal: customGoals) {
-//			NbtCompound goalData = GoalSerializer.serialize(prioritizedGoal);
-//
-//			goalDatas.add(goalData);
-//		}
-//
-//		nbt.put("customGoals", goalDatas);
+		NbtList goalDatas = new NbtList();
+
+		for(PrioritizedGoal prioritizedGoal: customGoals) {
+			NbtCompound goalData = GoalSerializer.serialize(prioritizedGoal);
+
+			goalDatas.add(goalData);
+		}
+
+		nbt.put("customGoals", goalDatas);
 	}
 
 	@Inject(at = @At("TAIL"), method = "readCustomDataFromNbt")
 	private void readNbt(NbtCompound nbt, CallbackInfo ci) {
 		convertedGoals = new ArrayList<>();
 
-		for(int index: nbt.getIntArray("convertedGoals")) {
-			convertedGoals.add(index);
+		GoalSelector goalSelector = getGoalSelector();
+
+		int[] convertedGoalIndexes = nbt.getIntArray("convertedGoals");
+
+		if(convertedGoalIndexes != null) {
+			ArrayList<PrioritizedGoal> goalsToRemove = new ArrayList<>();
+
+			for(int index: convertedGoalIndexes) {
+				convertedGoals.add(index);
+
+				goalsToRemove.add(originalGoals.get(index));
+			}
+
+			for(PrioritizedGoal goal: goalsToRemove) {
+				goalSelector.remove(goal);
+			}
+		}
+
+		NbtList customGoalDatas = (NbtList) nbt.get("customGoals");
+
+		if(customGoalDatas != null) {
+			for(NbtElement nbtElement: customGoalDatas) {
+				PrioritizedGoal deserializedGoal = GoalSerializer.deserialize((NbtCompound) nbtElement);
+
+				if(deserializedGoal == null) {
+					BossesOfLegend.LOGGER.error("Failed to serialized goal when loading: " + ((NbtCompound) nbtElement).getString("identifier"));
+
+					continue;
+				}
+
+				goalSelector.add(deserializedGoal.getPriority(), deserializedGoal.getGoal());
+			}
 		}
 	}
 
@@ -72,6 +103,20 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 	public void convertGoal(PrioritizedGoal prioritizedGoal) {
 		convertedGoals.add(originalGoals.indexOf(prioritizedGoal));
 
-		BossesOfLegend.LOGGER.info(prioritizedGoal.getGoal().getClass().getSimpleName());
+		GoalSelector goalSelector = getGoalSelector();
+		goalSelector.remove(prioritizedGoal);
+
+		NbtCompound serializedGoal = GoalSerializer.serialize(prioritizedGoal);
+		PrioritizedGoal deserializedGoal = GoalSerializer.deserialize(serializedGoal);
+
+		if(deserializedGoal == null) {
+			BossesOfLegend.LOGGER.error("Failed to serialized goal when converting: " + prioritizedGoal.getGoal().getClass().getSimpleName());
+
+			return;
+		}
+
+		customGoals.add(deserializedGoal);
+
+		BossesOfLegend.LOGGER.info("Converted: " + prioritizedGoal.getGoal().getClass().getSimpleName());
 	}
 }

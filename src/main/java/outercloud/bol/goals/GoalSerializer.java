@@ -16,16 +16,6 @@ public class GoalSerializer {
         registry.put(identifier, goal);
     }
 
-    public static boolean registered(Goal goal) {
-        Identifier identifier = ((SerializableGoal) goal).getIdentifier();
-
-        return registry.containsKey(identifier);
-    }
-
-    public static boolean registered(PrioritizedGoal prioritizedGoal) {
-        return registered(prioritizedGoal.getGoal());
-    }
-
     public static NbtCompound serialize(PrioritizedGoal prioritizedGoal) {
         NbtCompound data = ((SerializableGoal) prioritizedGoal.getGoal()).serialize();
         data.putInt("priority", prioritizedGoal.getPriority());

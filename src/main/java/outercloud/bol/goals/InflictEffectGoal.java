@@ -44,16 +44,6 @@ public class InflictEffectGoal extends Goal implements SerializableGoal {
     }
 
     @Override
-    public NbtCompound serialize() {
-        return new NbtCompound();
-    }
-
-    @Override
-    public void deserialize(NbtCompound nbt) {
-
-    }
-
-    @Override
     public Identifier getIdentifier() {
         return IDENTIFIER;
     }
