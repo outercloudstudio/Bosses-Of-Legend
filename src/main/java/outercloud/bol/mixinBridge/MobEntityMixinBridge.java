@@ -11,4 +11,6 @@ public interface MobEntityMixinBridge {
     void removeGoal(PrioritizedGoal prioritizedGoal);
 
     void convertGoal(PrioritizedGoal prioritizedGoal);
+
+    void addGoal(PrioritizedGoal prioritizedGoal);
 }

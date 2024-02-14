@@ -37,9 +37,9 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 
 		GoalSelector goalSelector = getGoalSelector();
 
-		originalGoals.addAll(goalSelector.getGoals());
+		goalSelector.add(1, new InflictEffectGoal(me));
 
-//		goalSelector.add(1, new InflictEffectGoal(me));
+		originalGoals.addAll(goalSelector.getGoals());
 	}
 
 	@Inject(at = @At("TAIL"), method = "writeCustomDataToNbt")
@@ -131,5 +131,16 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 		goalSelector.add(deserializedGoal.getPriority(), deserializedGoal.getGoal());
 
 		BossesOfLegend.LOGGER.info("Converted: " + prioritizedGoal.getGoal().getClass().getSimpleName());
+	}
+
+	@Override
+	public void addGoal(PrioritizedGoal prioritizedGoal) {
+		customGoals.add(prioritizedGoal);
+
+		GoalSelector goalSelector = getGoalSelector();
+
+		goalSelector.add(prioritizedGoal.getPriority(), prioritizedGoal.getGoal());
+
+		BossesOfLegend.LOGGER.info("Added: " + prioritizedGoal.getGoal().getClass().getSimpleName());
 	}
 }
