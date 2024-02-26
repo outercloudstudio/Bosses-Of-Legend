@@ -7,6 +7,7 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 
@@ -16,9 +17,12 @@ public class InflictEffectGoal extends Goal implements SerializableGoal {
     public static final Identifier IDENTIFIER = new Identifier("bol", "inflict_effect");
 
     private final MobEntity mob;
-    
-    public InflictEffectGoal(MobEntity mob) {
+
+    private Identifier effect;
+
+    public InflictEffectGoal(MobEntity mob, Identifier effect) {
         this.mob = mob;
+        this.effect = effect;
         setControls(EnumSet.of(Goal.Control.MOVE, Goal.Control.LOOK));
     }
 
@@ -32,7 +36,7 @@ public class InflictEffectGoal extends Goal implements SerializableGoal {
 
     @Override
     public void start() {
-        mob.getTarget().addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 5, 4), mob);
+        mob.getTarget().addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.get(effect), 20 * 5, 4), mob);
 
         ServerWorld world = (ServerWorld) mob.getWorld();
         world.spawnParticles(ParticleTypes.SONIC_BOOM, mob.getX(), mob.getY() + 3, mob.getZ(), 1, 0, 0, 0, 0);
@@ -48,7 +52,15 @@ public class InflictEffectGoal extends Goal implements SerializableGoal {
         return IDENTIFIER;
     }
 
+    @Override
+    public NbtCompound serialize() {
+        NbtCompound nbt = new NbtCompound();
+        nbt.putString("effect", effect.toString());
+
+        return nbt;
+    }
+
     public static SerializableGoal deserialize(MobEntity mobEntity, NbtCompound nbt) {
-        return new InflictEffectGoal(mobEntity);
+        return new InflictEffectGoal(mobEntity, new Identifier(nbt.getString("effect")));
     }
 }

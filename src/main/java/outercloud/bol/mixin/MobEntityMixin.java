@@ -6,6 +6,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
@@ -37,7 +38,7 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 
 		GoalSelector goalSelector = getGoalSelector();
 
-		goalSelector.add(1, new InflictEffectGoal(me));
+		goalSelector.add(1, new InflictEffectGoal(me, new Identifier("slowness")));
 
 		originalGoals.addAll(goalSelector.getGoals());
 	}
