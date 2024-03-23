@@ -2,6 +2,7 @@ package outercloud.bol.goals;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
@@ -36,7 +37,13 @@ public class InflictEffectGoal extends Goal implements SerializableGoal {
 
     @Override
     public void start() {
-        mob.getTarget().addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.get(effect), 20 * 5, 4), mob);
+        if(mob.getTarget() == null) return;
+
+        StatusEffect statusEffect = Registries.STATUS_EFFECT.get(effect);
+
+        if(statusEffect == null) return;
+
+        mob.getTarget().addStatusEffect(new StatusEffectInstance(statusEffect, 20 * 5, 4), mob);
 
         ServerWorld world = (ServerWorld) mob.getWorld();
         world.spawnParticles(ParticleTypes.SONIC_BOOM, mob.getX(), mob.getY() + 3, mob.getZ(), 1, 0, 0, 0, 0);

@@ -87,11 +87,12 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 				PrioritizedGoal deserializedGoal = GoalSerializer.deserialize((MobEntity) (Object) this, (NbtCompound) nbtElement);
 
 				if(deserializedGoal == null) {
-					BossesOfLegend.LOGGER.error("Failed to serialized goal when loading: " + ((NbtCompound) nbtElement).getString("identifier"));
+					BossesOfLegend.LOGGER.error("Failed to deserialize goal when loading: " + ((NbtCompound) nbtElement).getString("identifier"));
 
 					continue;
 				}
 
+				customGoals.add(deserializedGoal);
 				goalSelector.add(deserializedGoal.getPriority(), deserializedGoal.getGoal());
 			}
 		}
@@ -122,7 +123,7 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 		PrioritizedGoal deserializedGoal = GoalSerializer.deserialize((MobEntity) (Object) this, serializedGoal);
 
 		if(deserializedGoal == null) {
-			BossesOfLegend.LOGGER.error("Failed to serialized goal when converting: " + prioritizedGoal.getGoal().getClass().getSimpleName());
+			BossesOfLegend.LOGGER.error("Failed to deserialize goal when converting: " + prioritizedGoal.getGoal().getClass().getSimpleName());
 
 			return;
 		}
@@ -132,6 +133,26 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 		goalSelector.add(deserializedGoal.getPriority(), deserializedGoal.getGoal());
 
 		BossesOfLegend.LOGGER.info("Converted: " + prioritizedGoal.getGoal().getClass().getSimpleName());
+	}
+
+	@Override
+	public void editGoal(NbtCompound nbt, PrioritizedGoal prioritizedGoal) {
+		GoalSelector goalSelector = getGoalSelector();
+
+		goalSelector.remove(prioritizedGoal.getGoal());
+
+		PrioritizedGoal deserializedGoal = GoalSerializer.deserialize((MobEntity) (Object) this, nbt);
+
+		if(deserializedGoal == null) {
+			BossesOfLegend.LOGGER.error("Failed to deserialize goal when editing: " + nbt.getString("identifier"));
+
+			return;
+		}
+
+		customGoals.add(deserializedGoal);
+		goalSelector.add(deserializedGoal.getPriority(), deserializedGoal.getGoal());
+
+		BossesOfLegend.LOGGER.info("Edited: " + deserializedGoal.getGoal().getClass().getSimpleName());
 	}
 
 	@Override

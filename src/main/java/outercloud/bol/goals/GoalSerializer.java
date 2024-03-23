@@ -6,11 +6,14 @@ import net.minecraft.entity.ai.goal.PrioritizedGoal;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
+import outercloud.bol.BossScreenHandler;
 import outercloud.bol.BossesOfLegend;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 public class GoalSerializer {
     private static HashMap<Identifier, BiFunction<MobEntity, NbtCompound, SerializableGoal>> deserializerRegistry = new HashMap<>();
@@ -33,15 +36,15 @@ public class GoalSerializer {
     public static PrioritizedGoal deserialize(MobEntity mobEntity, NbtCompound nbt) {
         Identifier identifier = new Identifier(nbt.getString("identifier"));
 
-        Map.Entry<Identifier, BiFunction<MobEntity, NbtCompound, SerializableGoal>> deserializer = deserializerRegistry.entrySet().stream().filter(entry -> entry.getKey().equals(identifier)).findFirst().orElse(null);
-
-        if(deserializer == null) {
+        if(!deserializerRegistry.containsKey(identifier)) {
             BossesOfLegend.LOGGER.error("Could not deserialize goal with identifier " + identifier + " because it has not been registered!");
 
             return null;
         }
 
-        Goal goal = (Goal) deserializer.getValue().apply(mobEntity, nbt);
+        BiFunction<MobEntity, NbtCompound, SerializableGoal> deserializer = deserializerRegistry.get(identifier);
+
+        Goal goal = (Goal) deserializer.apply(mobEntity, nbt);
 
         return  new PrioritizedGoal(nbt.getInt("priority"), goal);
     }

@@ -17,11 +17,9 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
+import outercloud.bol.goals.GoalSerializer;
 import outercloud.bol.mixinBridge.MobEntityMixinBridge;
-import outercloud.bol.packets.BossScreenDataPacket;
-import outercloud.bol.packets.BossScreenReadyPacket;
-import outercloud.bol.packets.ConvertGoalPacket;
-import outercloud.bol.packets.DeleteGoalPacket;
+import outercloud.bol.packets.*;
 
 import java.util.ArrayList;
 
@@ -41,6 +39,7 @@ public class BossScreenHandler extends ScreenHandler {
         ServerPlayNetworking.registerReceiver(player.networkHandler, BossScreenReadyPacket.TYPE, this::receiveReady);
         ServerPlayNetworking.registerReceiver(player.networkHandler, DeleteGoalPacket.TYPE, this::receiveDeleteGoal);
         ServerPlayNetworking.registerReceiver(player.networkHandler, ConvertGoalPacket.TYPE, this::receiveConvertGoal);
+        ServerPlayNetworking.registerReceiver(player.networkHandler, EditGoalPacket.TYPE, this::receiveEditGoal);
     }
 
     public BossScreenHandler(int syncId, PlayerInventory playerInventory) {
@@ -70,6 +69,7 @@ public class BossScreenHandler extends ScreenHandler {
         ServerPlayNetworking.unregisterReceiver(this.player.networkHandler, BossScreenReadyPacket.TYPE);
         ServerPlayNetworking.unregisterReceiver(this.player.networkHandler, DeleteGoalPacket.TYPE);
         ServerPlayNetworking.unregisterReceiver(this.player.networkHandler, ConvertGoalPacket.TYPE);
+        ServerPlayNetworking.unregisterReceiver(this.player.networkHandler, EditGoalPacket.TYPE);
     }
 
     private void sendData(ServerPlayerEntity player) {
@@ -85,6 +85,11 @@ public class BossScreenHandler extends ScreenHandler {
             compound.putInt("priority", priority);
             compound.putString("name", goal.getClass().getSimpleName());
             compound.putBoolean("original", ((MobEntityMixinBridge) entity).getGoalIsOriginal(prioritizedGoal));
+
+            NbtCompound data = GoalSerializer.serialize(prioritizedGoal);
+
+            compound.put("data", data);
+            compound.putString("identifier", data.getString("identifier"));
 
             goalsData.add(compound);
         }
@@ -110,5 +115,13 @@ public class BossScreenHandler extends ScreenHandler {
         ((MobEntityMixinBridge) entity).convertGoal(goalSelector.getGoals().stream().toList().get(packet.index));
 
         sendData(player);
+    }
+
+    private void receiveEditGoal(EditGoalPacket packet, ServerPlayerEntity player, PacketSender responseSender) {
+        BossesOfLegend.LOGGER.info(packet.nbt.toString());
+
+        GoalSelector goalSelector = ((MobEntityMixinBridge) entity).getGoalSelector();
+
+        ((MobEntityMixinBridge) entity).editGoal(packet.nbt, goalSelector.getGoals().stream().toList().get(packet.index));
     }
 }

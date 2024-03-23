@@ -2,9 +2,11 @@ package outercloud.bol;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -13,12 +15,10 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
+import org.lwjgl.glfw.GLFW;
+import outercloud.bol.goals.GoalUi;
 import outercloud.bol.mixin.client.ScreenMixin;
-import outercloud.bol.mixinBridge.MobEntityMixinBridge;
-import outercloud.bol.packets.BossScreenDataPacket;
-import outercloud.bol.packets.BossScreenReadyPacket;
-import outercloud.bol.packets.ConvertGoalPacket;
-import outercloud.bol.packets.DeleteGoalPacket;
+import outercloud.bol.packets.*;
 
 import java.util.ArrayList;
 
@@ -27,6 +27,8 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
     private MobEntity mobEntity;
     private ArrayList<NbtCompound> goals;
     private ArrayList<Element> goalElements = new ArrayList<>();
+    private int openGoalIndex = -1;
+    private ArrayList<Element> openGoalElements = new ArrayList<>();
 
     public BossScreen(BossScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
@@ -90,9 +92,7 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
     }
 
     private void createGoalButtons() {
-        for(Element element: goalElements) {
-            remove(element);
-        }
+        destroyGoalButtons();
 
         goalsToDisplay = Math.max((height - 64) / 24, 1);
 
@@ -104,9 +104,11 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
             int x = width / 2 - (128 + 8 + 64 + 8 + 64) / 2;
             int y = 16 + 16 + index * 24;
 
+            int currentIndex = index;
+
             if(!original) {
                 goalElements.add(addDrawableChild(ButtonWidget.builder(Text.of(name), widget -> {
-
+                    openGoal(currentIndex);
                 }).dimensions(x, y, 128, 16).build()));
                 x += 128 + 8;
 
@@ -115,7 +117,6 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
                 }).dimensions(x, y, 64, 16).build()));
                 x += 64 + 8;
 
-                int currentIndex = index;
                 goalElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Delete"), widget -> {
                     ClientPlayNetworking.send(new DeleteGoalPacket(currentIndex));
 
@@ -129,8 +130,6 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
                 }).dimensions(x, y, 128, 16).build()));
                 x += 128 + 8;
 
-                int currentIndex = index;
-
                 goalElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Convert"), widget -> {
                     ClientPlayNetworking.send(new ConvertGoalPacket(currentIndex));
 
@@ -141,5 +140,48 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
                 x += 64 + 8;
             }
         }
+    }
+
+    private void destroyGoalButtons() {
+        for(Element element: goalElements) {
+            remove(element);
+        }
+    }
+
+    private void openGoal(int index) {
+        destroyGoalButtons();
+
+        openGoalIndex = index;
+
+        GoalUi.create(this, goals.get(index), index);
+    }
+
+    public TextRenderer getTextRenderer() {
+        return textRenderer;
+    }
+
+    public <T extends Drawable & Element & Selectable> void addOpenGoalElement(T element) {
+        addDrawableChild(element);
+    }
+
+    public void editGoal(NbtCompound nbt, int index) {
+        ClientPlayNetworking.send(new EditGoalPacket(nbt, index));
+
+        goals.get(index).put("data", nbt);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+            client.player.closeHandledScreen();
+
+            return true;
+        }
+
+        if (client.options.inventoryKey.matchesKey(keyCode, scanCode)) {
+            return true;
+        }
+
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 }
