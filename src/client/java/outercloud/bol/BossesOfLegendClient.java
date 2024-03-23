@@ -26,7 +26,7 @@ public class BossesOfLegendClient implements ClientModInitializer {
 
 			data.screen.addOpenGoalElement(textFieldWidget);
 
-			
+
 		});
 	}
 }

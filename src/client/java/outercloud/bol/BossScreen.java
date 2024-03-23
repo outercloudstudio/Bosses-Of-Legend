@@ -11,10 +11,10 @@ import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
+import org.apache.commons.lang3.NotImplementedException;
 import org.lwjgl.glfw.GLFW;
 import outercloud.bol.goals.GoalUi;
 import outercloud.bol.mixin.client.ScreenMixin;
@@ -24,15 +24,18 @@ import java.util.ArrayList;
 
 public class BossScreen extends HandledScreen<BossScreenHandler> {
     private int goalsToDisplay;
-    private MobEntity mobEntity;
     private ArrayList<NbtCompound> goals;
-    private ArrayList<Element> goalElements = new ArrayList<>();
+
+    private ArrayList<Element> goalListScreenElements = new ArrayList<>();
+    private int goalListStartingIndex = 0;
+
     private int openGoalIndex = -1;
     private ArrayList<Element> openGoalElements = new ArrayList<>();
 
     public BossScreen(BossScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
 
+        ClientPlayNetworking.registerReceiver(BossScreenDataPacket.TYPE, this::receiveData);
         ClientPlayNetworking.send(new BossScreenReadyPacket());
     }
 
@@ -42,23 +45,82 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
 
     @Override
     protected void init() {
-        addDrawableChild(ButtonWidget.builder(Text.of("Done"), widget -> {
+
+    }
+
+    @Override
+    public void close() {
+        super.close();
+
+        ClientPlayNetworking.unregisterReceiver(BossScreenDataPacket.TYPE);
+    }
+
+    private void receiveData(BossScreenDataPacket packet, ClientPlayerEntity player, PacketSender responseSender) {
+        this.goals = packet.goals;
+
+        createGoalListScreen();
+    }
+
+    private void createGoalListScreen() {
+        int goalsBoxHeight = height - 32;
+        int goalsFit = Math.min(Math.max(goalsBoxHeight / 18, 1), goals.size() - goalListStartingIndex);
+        int goalsBoxStart = 16;
+
+        for(int goalListIndex = 0; goalListIndex < goalsFit; goalListIndex++) {
+            int index = goalListIndex;
+
+            NbtCompound goalData = this.goals.get(goalListStartingIndex + goalListIndex);
+            String name = goalData.getString("name");
+            boolean original = goalData.getBoolean("original");
+
+            int rowX = width / 2 - 128;
+
+            goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of(name), widget -> {
+
+            }).dimensions(rowX, goalsBoxStart, 128, 16).build()));
+            rowX += 128;
+
+            if(original) {
+                goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Convert"), widget -> {
+                    ClientPlayNetworking.send(new ConvertGoalPacket(index));
+
+                    destroyGoalListScreen();
+                }).dimensions(rowX, goalsBoxStart, 128, 16).build()));
+            } else {
+                goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Duplicate"), widget -> {
+                    throw new NotImplementedException();
+                }).dimensions(rowX, goalsBoxStart, 64, 16).build()));
+                rowX += 64;
+
+                goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Delete"), widget -> {
+                    ClientPlayNetworking.send(new DeleteGoalPacket(index));
+
+                    destroyGoalListScreen();
+                }).dimensions(rowX, goalsBoxStart, 64, 16).build()));
+            }
+
+            goalsBoxStart += 18;
+        }
+
+        goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Done"), widget -> {
             close();
-        }).dimensions(width / 2 - 32, height - 24, 64, 16).build());
+        }).dimensions(width / 2, goalsBoxStart, 64, 16).build()));
 
-        addDrawableChild(ButtonWidget.builder(Text.of("<"), widget -> {
+        goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of("<"), widget -> {
 
-        }).dimensions(width / 4 - 32, height - 24, 16, 16).build());
+        }).dimensions(width / 2 - 64, goalsBoxStart, 32, 16).build()));
 
-        addDrawableChild(ButtonWidget.builder(Text.of("+"), widget -> {
+        goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of(">"), widget -> {
 
-        }).dimensions(width / 4 - 8, height - 24, 16, 16).build());
+        }).dimensions(width / 2 - 32, goalsBoxStart, 32, 16).build()));
+    }
 
-        addDrawableChild(ButtonWidget.builder(Text.of(">"), widget -> {
+    private void destroyGoalListScreen() {
+        for(Element element: goalListScreenElements) {
+            remove(element);
+        }
 
-        }).dimensions(width / 4 + 16, height - 24, 16, 16).build());
-
-        ClientPlayNetworking.registerReceiver(BossScreenDataPacket.TYPE, this::recieveData);
+        goalListScreenElements.clear();
     }
 
     @Override
@@ -78,19 +140,6 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
     @Override
     protected void drawForeground(DrawContext context, int mouseX, int mouseY) {}
 
-    @Override
-    public void close() {
-        super.close();
-
-        ClientPlayNetworking.unregisterReceiver(BossScreenDataPacket.TYPE);
-    }
-
-    private void recieveData(BossScreenDataPacket packet, ClientPlayerEntity player, PacketSender responseSender) {
-        this.goals = packet.goals;
-
-        createGoalButtons();
-    }
-
     private void createGoalButtons() {
         destroyGoalButtons();
 
@@ -107,17 +156,17 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
             int currentIndex = index;
 
             if(!original) {
-                goalElements.add(addDrawableChild(ButtonWidget.builder(Text.of(name), widget -> {
+                goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of(name), widget -> {
                     openGoal(currentIndex);
                 }).dimensions(x, y, 128, 16).build()));
                 x += 128 + 8;
 
-                goalElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Duplicate"), widget -> {
+                goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Duplicate"), widget -> {
 
                 }).dimensions(x, y, 64, 16).build()));
                 x += 64 + 8;
 
-                goalElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Delete"), widget -> {
+                goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Delete"), widget -> {
                     ClientPlayNetworking.send(new DeleteGoalPacket(currentIndex));
 
                     goals = new ArrayList<>();
@@ -125,12 +174,12 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
                     createGoalButtons();
                 }).dimensions(x, y, 64, 16).build()));
             } else {
-                goalElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Default: " + name), widget -> {
+                goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Default: " + name), widget -> {
 
                 }).dimensions(x, y, 128, 16).build()));
                 x += 128 + 8;
 
-                goalElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Convert"), widget -> {
+                goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Convert"), widget -> {
                     ClientPlayNetworking.send(new ConvertGoalPacket(currentIndex));
 
                     goals = new ArrayList<>();
@@ -143,7 +192,7 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
     }
 
     private void destroyGoalButtons() {
-        for(Element element: goalElements) {
+        for(Element element: goalListScreenElements) {
             remove(element);
         }
     }
