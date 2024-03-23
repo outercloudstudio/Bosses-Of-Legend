@@ -84,6 +84,8 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
             int rowX = width / 2 - 128;
 
             goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of(name), widget -> {
+                if(original) return;
+
                 destroyGoalListScreen();
 
                 createGoalScreen(index);

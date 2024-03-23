@@ -96,6 +96,8 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 				goalSelector.add(deserializedGoal.getPriority(), deserializedGoal.getGoal());
 			}
 		}
+
+		BossesOfLegend.LOGGER.info(nbt.toString());
 	}
 
 	public boolean getGoalIsOriginal(PrioritizedGoal prioritizedGoal){
