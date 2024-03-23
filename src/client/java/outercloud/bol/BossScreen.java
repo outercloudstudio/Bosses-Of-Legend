@@ -62,11 +62,21 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
     }
 
     private void createGoalListScreen() {
+        if(goalListStartingIndex < 0) goalListStartingIndex = 0;
+        if(goalListStartingIndex >= goals.size()) goalListStartingIndex = goals.size() - 1;
+
         int goalsBoxHeight = height - 32;
-        int goalsFit = Math.min(Math.max(goalsBoxHeight / 18, 1), goals.size() - goalListStartingIndex);
+        int maxGoalsFit = Math.max(goalsBoxHeight / 18, 1);
+        int goalsFit = Math.min(maxGoalsFit, goals.size() - goalListStartingIndex);
         int goalsBoxStart = 16;
 
-        for(int goalListIndex = 0; goalListIndex < goalsFit; goalListIndex++) {
+        for(int goalListIndex = 0; goalListIndex < maxGoalsFit; goalListIndex++) {
+            if(goalListIndex >= goalsFit) {
+                goalsBoxStart += 18;
+
+                continue;
+            }
+
             int index = goalListIndex;
 
             NbtCompound goalData = this.goals.get(goalListStartingIndex + goalListIndex);
@@ -107,11 +117,17 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
         }).dimensions(width / 2, goalsBoxStart, 64, 16).build()));
 
         goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of("<"), widget -> {
+            goalListStartingIndex--;
 
+            destroyGoalListScreen();
+            createGoalListScreen();
         }).dimensions(width / 2 - 64, goalsBoxStart, 32, 16).build()));
 
         goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of(">"), widget -> {
+            goalListStartingIndex++;
 
+            destroyGoalListScreen();
+            createGoalListScreen();
         }).dimensions(width / 2 - 32, goalsBoxStart, 32, 16).build()));
     }
 
