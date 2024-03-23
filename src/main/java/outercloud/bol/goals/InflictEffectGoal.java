@@ -20,16 +20,18 @@ public class InflictEffectGoal extends Goal implements SerializableGoal {
     private final MobEntity mob;
 
     private Identifier effect;
+    private int chance;
 
-    public InflictEffectGoal(MobEntity mob, Identifier effect) {
+    public InflictEffectGoal(MobEntity mob, Identifier effect, int chance) {
         this.mob = mob;
         this.effect = effect;
+        this.chance = chance;
         setControls(EnumSet.of(Goal.Control.MOVE, Goal.Control.LOOK));
     }
 
     @Override
     public boolean canStart() {
-        if (mob.getRandom().nextInt(toGoalTicks(100)) != 0) return false;
+        if (mob.getRandom().nextInt(toGoalTicks(chance)) != 0) return false;
 
         LivingEntity livingEntity = mob.getTarget();
         return livingEntity != null && livingEntity.isAlive() && mob.canTarget(livingEntity);
@@ -63,11 +65,12 @@ public class InflictEffectGoal extends Goal implements SerializableGoal {
     public NbtCompound serialize() {
         NbtCompound nbt = new NbtCompound();
         nbt.putString("effect", effect.toString());
+        nbt.putInt("chance", chance);
 
         return nbt;
     }
 
     public static SerializableGoal deserialize(MobEntity mobEntity, NbtCompound nbt) {
-        return new InflictEffectGoal(mobEntity, new Identifier(nbt.getString("effect")));
+        return new InflictEffectGoal(mobEntity, new Identifier(nbt.getString("effect")), nbt.getInt("chance"));
     }
 }

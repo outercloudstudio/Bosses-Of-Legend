@@ -38,7 +38,7 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 
 		GoalSelector goalSelector = getGoalSelector();
 
-		goalSelector.add(1, new InflictEffectGoal(me, new Identifier("slowness")));
+		goalSelector.add(1, new InflictEffectGoal(me, new Identifier("slowness"), 1));
 
 		originalGoals.addAll(goalSelector.getGoals());
 	}
