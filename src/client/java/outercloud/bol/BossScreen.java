@@ -23,14 +23,12 @@ import outercloud.bol.packets.*;
 import java.util.ArrayList;
 
 public class BossScreen extends HandledScreen<BossScreenHandler> {
-    private int goalsToDisplay;
     private ArrayList<NbtCompound> goals;
 
     private ArrayList<Element> goalListScreenElements = new ArrayList<>();
     private int goalListStartingIndex = 0;
 
-    private int openGoalIndex = -1;
-    private ArrayList<Element> openGoalElements = new ArrayList<>();
+    private ArrayList<Element> goalScreenElements = new ArrayList<>();
 
     public BossScreen(BossScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
@@ -86,7 +84,9 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
             int rowX = width / 2 - 128;
 
             goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of(name), widget -> {
+                destroyGoalListScreen();
 
+                createGoalScreen(index);
             }).dimensions(rowX, goalsBoxStart, 128, 16).build()));
             rowX += 128;
 
@@ -139,6 +139,24 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
         goalListScreenElements.clear();
     }
 
+    private void createGoalScreen(int index) {
+        GoalUi.create(this, goals.get(index), index);
+
+        goalScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Back"), widget -> {
+            destroyGoalScreen();
+
+            createGoalListScreen();
+        }).dimensions(width / 2 - 16, height - 20, 32, 16).build()));
+    }
+
+    private void destroyGoalScreen() {
+        for(Element element: goalScreenElements) {
+            remove(element);
+        }
+
+        goalScreenElements.clear();
+    }
+
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.renderBackground(context);
@@ -156,77 +174,14 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
     @Override
     protected void drawForeground(DrawContext context, int mouseX, int mouseY) {}
 
-    private void createGoalButtons() {
-        destroyGoalButtons();
-
-        goalsToDisplay = Math.max((height - 64) / 24, 1);
-
-        for(int index = 0; index < Math.min(this.goals.size(), goalsToDisplay); index++) {
-            NbtCompound goalData = this.goals.get(index);
-            String name = goalData.getString("name");
-            boolean original = goalData.getBoolean("original");
-
-            int x = width / 2 - (128 + 8 + 64 + 8 + 64) / 2;
-            int y = 16 + 16 + index * 24;
-
-            int currentIndex = index;
-
-            if(!original) {
-                goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of(name), widget -> {
-                    openGoal(currentIndex);
-                }).dimensions(x, y, 128, 16).build()));
-                x += 128 + 8;
-
-                goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Duplicate"), widget -> {
-
-                }).dimensions(x, y, 64, 16).build()));
-                x += 64 + 8;
-
-                goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Delete"), widget -> {
-                    ClientPlayNetworking.send(new DeleteGoalPacket(currentIndex));
-
-                    goals = new ArrayList<>();
-
-                    createGoalButtons();
-                }).dimensions(x, y, 64, 16).build()));
-            } else {
-                goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Default: " + name), widget -> {
-
-                }).dimensions(x, y, 128, 16).build()));
-                x += 128 + 8;
-
-                goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Convert"), widget -> {
-                    ClientPlayNetworking.send(new ConvertGoalPacket(currentIndex));
-
-                    goals = new ArrayList<>();
-
-                    createGoalButtons();
-                }).dimensions(x, y, 64, 16).build()));
-                x += 64 + 8;
-            }
-        }
-    }
-
-    private void destroyGoalButtons() {
-        for(Element element: goalListScreenElements) {
-            remove(element);
-        }
-    }
-
-    private void openGoal(int index) {
-        destroyGoalButtons();
-
-        openGoalIndex = index;
-
-        GoalUi.create(this, goals.get(index), index);
-    }
-
     public TextRenderer getTextRenderer() {
         return textRenderer;
     }
 
     public <T extends Drawable & Element & Selectable> void addOpenGoalElement(T element) {
         addDrawableChild(element);
+
+        goalScreenElements.add(element);
     }
 
     public void editGoal(NbtCompound nbt, int index) {
