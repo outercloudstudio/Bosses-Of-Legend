@@ -142,6 +142,7 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 		GoalSelector goalSelector = getGoalSelector();
 
 		goalSelector.remove(prioritizedGoal.getGoal());
+		customGoals.remove(customGoals.stream().filter(otherGoal -> otherGoal.getGoal() == prioritizedGoal.getGoal()).findFirst().get());
 
 		PrioritizedGoal deserializedGoal = GoalSerializer.deserialize((MobEntity) (Object) this, nbt);
 

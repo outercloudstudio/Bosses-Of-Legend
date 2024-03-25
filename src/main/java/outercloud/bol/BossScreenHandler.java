@@ -118,8 +118,6 @@ public class BossScreenHandler extends ScreenHandler {
     }
 
     private void receiveEditGoal(EditGoalPacket packet, ServerPlayerEntity player, PacketSender responseSender) {
-        BossesOfLegend.LOGGER.info(packet.nbt.toString());
-
         GoalSelector goalSelector = ((MobEntityMixinBridge) entity).getGoalSelector();
 
         ((MobEntityMixinBridge) entity).editGoal(packet.nbt, goalSelector.getGoals().stream().toList().get(packet.index));
