@@ -16,7 +16,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import org.apache.commons.lang3.NotImplementedException;
 import org.lwjgl.glfw.GLFW;
-import outercloud.bol.goals.GoalUi;
+import outercloud.bol.goals.OpenGoalUIRegistry;
+import outercloud.bol.goals.OpenGoalScreen;
 import outercloud.bol.mixin.client.ScreenMixin;
 import outercloud.bol.packets.*;
 
@@ -28,7 +29,7 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
     private ArrayList<Element> goalListScreenElements = new ArrayList<>();
     private int goalListStartingIndex = 0;
 
-    private ArrayList<Element> goalScreenElements = new ArrayList<>();
+    private OpenGoalScreen openGoalScreen;
 
     public BossScreen(BossScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
@@ -142,21 +143,23 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
     }
 
     private void createGoalScreen(int index) {
-        GoalUi.create(this, goals.get(index), index);
+        OpenGoalScreen openGoalScreen = new OpenGoalScreen(this, goals.get(index), index);
 
-        goalScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Back"), widget -> {
+        OpenGoalUIRegistry.create(openGoalScreen);
+
+        openGoalScreen.add(ButtonWidget.builder(Text.of("Back"), widget -> {
             destroyGoalScreen();
 
             createGoalListScreen();
-        }).dimensions(width / 2 - 16, height - 20, 32, 16).build()));
+        }).dimensions(width / 2 - 16, height - 20, 32, 16).build());
+
+        this.openGoalScreen = openGoalScreen;
     }
 
     private void destroyGoalScreen() {
-        for(Element element: goalScreenElements) {
-            remove(element);
-        }
+        openGoalScreen.destroy();
 
-        goalScreenElements.clear();
+        openGoalScreen = null;
     }
 
     @Override
@@ -180,12 +183,14 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
         return textRenderer;
     }
 
-    public <T extends Drawable & Element & Selectable> T addOpenGoalElement(T element) {
-        addDrawableChild(element);
+    @Override
+    public <T extends Element & Drawable & Selectable> T addDrawableChild(T drawableElement) {
+        return super.addDrawableChild(drawableElement);
+    }
 
-        goalScreenElements.add(element);
-
-        return element;
+    @Override
+    public void remove(Element child) {
+        super.remove(child);
     }
 
     public void editGoal(NbtCompound nbt, int index) {

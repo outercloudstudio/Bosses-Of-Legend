@@ -20,18 +20,23 @@ public class InflictEffectGoal extends Goal implements SerializableGoal {
     private Identifier effect;
     private int chance;
     private String command;
+    private int duration;
+    private int amplifier;
 
-    public InflictEffectGoal(MobEntity mob, Identifier effect, int chance, String command) {
+    public InflictEffectGoal(MobEntity mob, Identifier effect, int chance, String command, int duration, int amplifier) {
         this.mob = mob;
         this.effect = effect;
         this.chance = chance;
         this.command = command;
+        this.duration = duration;
+        this.amplifier = amplifier;
+
         setControls(EnumSet.of(Goal.Control.MOVE, Goal.Control.LOOK));
     }
 
     @Override
     public boolean canStart() {
-        if (mob.getRandom().nextInt(toGoalTicks(chance)) != 0) return false;
+        if (mob.getRandom().nextInt(toGoalTicks(Math.max(chance, 1))) != 0) return false;
 
         LivingEntity livingEntity = mob.getTarget();
         return livingEntity != null && livingEntity.isAlive() && mob.canTarget(livingEntity);
@@ -45,7 +50,7 @@ public class InflictEffectGoal extends Goal implements SerializableGoal {
 
         if(statusEffect == null) return;
 
-        mob.getTarget().addStatusEffect(new StatusEffectInstance(statusEffect, 20 * 5, 4), mob);
+        mob.getTarget().addStatusEffect(new StatusEffectInstance(statusEffect, duration, amplifier), mob);
 
         MinecraftServer server = mob.getServer();
 
@@ -68,11 +73,13 @@ public class InflictEffectGoal extends Goal implements SerializableGoal {
         nbt.putString("effect", effect.toString());
         nbt.putInt("chance", chance);
         nbt.putString("command", command);
+        nbt.putInt("duration", duration);
+        nbt.putInt("amplifier", amplifier);
 
         return nbt;
     }
 
     public static SerializableGoal deserialize(MobEntity mobEntity, NbtCompound nbt) {
-        return new InflictEffectGoal(mobEntity, new Identifier(nbt.getString("effect")), nbt.getInt("chance"), nbt.getString("command"));
+        return new InflictEffectGoal(mobEntity, new Identifier(nbt.getString("effect")), nbt.getInt("chance"), nbt.getString("command"), nbt.getInt("duration"), nbt.getInt("amplifier"));
     }
 }
