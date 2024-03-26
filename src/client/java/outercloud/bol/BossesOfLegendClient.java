@@ -2,12 +2,12 @@ package outercloud.bol;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.gui.widget.TextWidget;
 import net.minecraft.text.Text;
 import outercloud.bol.goals.GoalUi;
 import outercloud.bol.goals.InflictEffectGoal;
 
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 public class BossesOfLegendClient implements ClientModInitializer {
 	@Override
@@ -17,9 +17,12 @@ public class BossesOfLegendClient implements ClientModInitializer {
 		GoalUi.register(InflictEffectGoal.IDENTIFIER, (data) -> {
 			int nextElementY = 32;
 
-			TextFieldWidget effectWidget = new TextFieldWidget(data.screen.getTextRenderer(), 0, 0, 128, 16, Text.of(""));
-			effectWidget.setX(data.screen.width / 2 - effectWidget.getWidth() / 2);
-			effectWidget.setY(nextElementY);
+			data.screen.addOpenGoalElement(new TextWidget(data.screen.width / 2 - 60, 12, 120, 18, Text.of("Inflict Effect"), data.screen.getTextRenderer()));
+
+			TextWidget labelWidget = data.screen.addOpenGoalElement(new TextWidget(data.screen.width / 2 - 128 - 64, nextElementY, 120, 18, Text.of("Effect:"), data.screen.getTextRenderer()));
+			labelWidget.alignRight();
+
+			TextFieldWidget effectWidget = new TextFieldWidget(data.screen.getTextRenderer(), data.screen.width / 2 - 64, nextElementY, 128, 16, Text.of(""));
 			effectWidget.setText(data.nbt.getCompound("data").getString("effect"));
 
 			effectWidget.setChangedListener(text -> {
@@ -32,14 +35,21 @@ public class BossesOfLegendClient implements ClientModInitializer {
 
 			nextElementY += effectWidget.getHeight() + 4;
 
-			TextFieldWidget priorityWidget = new TextFieldWidget(data.screen.getTextRenderer(), 0, 0, 32, 16, Text.of(""));
-			priorityWidget.setX(data.screen.width / 2 - priorityWidget.getWidth() / 2);
-			priorityWidget.setY(nextElementY);
+			labelWidget = data.screen.addOpenGoalElement(new TextWidget(data.screen.width / 2 - 128 - 64, nextElementY, 120, 18, Text.of("Priority:"), data.screen.getTextRenderer()));
+			labelWidget.alignRight();
+
+			TextFieldWidget priorityWidget = new TextFieldWidget(data.screen.getTextRenderer(), data.screen.width / 2 - 64, nextElementY, 128, 16, Text.of(""));
 			priorityWidget.setText(String.valueOf(data.nbt.getCompound("data").getInt("priority")));
 
-			priorityWidget.setTextPredicate(text -> Arrays.stream(text.split("")).filter("0123456789"::contains).toList().size() == text.length());
+			priorityWidget.setTextPredicate(text -> text.isEmpty() || Arrays.stream(text.split("")).filter("0123456789"::contains).toList().size() == text.length());
 
 			priorityWidget.setChangedListener(text -> {
+				if(text.isEmpty()) {
+					priorityWidget.setText("0");
+
+					return;
+				}
+
 				data.nbt.getCompound("data").putInt("priority", Integer.parseInt(text));
 
 				data.screen.editGoal(data.nbt.getCompound("data"), data.index);
@@ -49,9 +59,10 @@ public class BossesOfLegendClient implements ClientModInitializer {
 
 			nextElementY += priorityWidget.getHeight() + 4;
 
-			TextFieldWidget commandWidget = new TextFieldWidget(data.screen.getTextRenderer(), 0, 0, 128, 16, Text.of(""));
-			commandWidget.setX(data.screen.width / 2 - commandWidget.getWidth() / 2);
-			commandWidget.setY(nextElementY);
+			labelWidget = data.screen.addOpenGoalElement(new TextWidget(data.screen.width / 2 - 128 - 64, nextElementY, 120, 18, Text.of("Command:"), data.screen.getTextRenderer()));
+			labelWidget.alignRight();
+
+			TextFieldWidget commandWidget = new TextFieldWidget(data.screen.getTextRenderer(), data.screen.width / 2 - 64, nextElementY, 128, 16, Text.of(""));
 			commandWidget.setText(String.valueOf(data.nbt.getCompound("data").getString("command")));
 
 			commandWidget.setChangedListener(text -> {

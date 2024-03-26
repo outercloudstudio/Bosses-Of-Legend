@@ -180,10 +180,12 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
         return textRenderer;
     }
 
-    public <T extends Drawable & Element & Selectable> void addOpenGoalElement(T element) {
+    public <T extends Drawable & Element & Selectable> T addOpenGoalElement(T element) {
         addDrawableChild(element);
 
         goalScreenElements.add(element);
+
+        return element;
     }
 
     public void editGoal(NbtCompound nbt, int index) {
