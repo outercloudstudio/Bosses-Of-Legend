@@ -48,6 +48,21 @@ public class BossesOfLegendClient implements ClientModInitializer {
 			data.screen.addOpenGoalElement(priorityWidget);
 
 			nextElementY += priorityWidget.getHeight() + 4;
+
+			TextFieldWidget commandWidget = new TextFieldWidget(data.screen.getTextRenderer(), 0, 0, 128, 16, Text.of(""));
+			commandWidget.setX(data.screen.width / 2 - commandWidget.getWidth() / 2);
+			commandWidget.setY(nextElementY);
+			commandWidget.setText(String.valueOf(data.nbt.getCompound("data").getString("command")));
+
+			commandWidget.setChangedListener(text -> {
+				data.nbt.getCompound("data").putString("command", text);
+
+				data.screen.editGoal(data.nbt.getCompound("data"), data.index);
+			});
+
+			data.screen.addOpenGoalElement(commandWidget);
+
+			nextElementY += commandWidget.getHeight() + 4;
 		});
 	}
 }

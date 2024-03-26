@@ -4,12 +4,10 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 
 import java.util.EnumSet;
@@ -21,11 +19,13 @@ public class InflictEffectGoal extends Goal implements SerializableGoal {
 
     private Identifier effect;
     private int chance;
+    private String command;
 
-    public InflictEffectGoal(MobEntity mob, Identifier effect, int chance) {
+    public InflictEffectGoal(MobEntity mob, Identifier effect, int chance, String command) {
         this.mob = mob;
         this.effect = effect;
         this.chance = chance;
+        this.command = command;
         setControls(EnumSet.of(Goal.Control.MOVE, Goal.Control.LOOK));
     }
 
@@ -47,8 +47,9 @@ public class InflictEffectGoal extends Goal implements SerializableGoal {
 
         mob.getTarget().addStatusEffect(new StatusEffectInstance(statusEffect, 20 * 5, 4), mob);
 
-        ServerWorld world = (ServerWorld) mob.getWorld();
-        world.spawnParticles(ParticleTypes.SONIC_BOOM, mob.getX(), mob.getY() + 3, mob.getZ(), 1, 0, 0, 0, 0);
+        MinecraftServer server = mob.getServer();
+
+        server.getCommandManager().executeWithPrefix(server.getCommandSource().withEntity(mob).withLevel(4), command);
     }
 
     @Override
@@ -66,11 +67,12 @@ public class InflictEffectGoal extends Goal implements SerializableGoal {
         NbtCompound nbt = new NbtCompound();
         nbt.putString("effect", effect.toString());
         nbt.putInt("chance", chance);
+        nbt.putString("command", command);
 
         return nbt;
     }
 
     public static SerializableGoal deserialize(MobEntity mobEntity, NbtCompound nbt) {
-        return new InflictEffectGoal(mobEntity, new Identifier(nbt.getString("effect")), nbt.getInt("chance"));
+        return new InflictEffectGoal(mobEntity, new Identifier(nbt.getString("effect")), nbt.getInt("chance"), nbt.getString("command"));
     }
 }
