@@ -70,4 +70,20 @@ public class HealthCondition implements Condition {
 
         return new HealthCondition(limit, operator);
     }
+
+    public String conditionToString(){
+        if(operator == Operator.LessThan) {
+            return "<";
+        } else if(operator == Operator.LessThanEqual) {
+            return "<=";
+        } else if(operator == Operator.Equal) {
+            return "=";
+        } else if(operator == Operator.GreaterThan) {
+            return ">";
+        } else if(operator == Operator.GreaterThanEqual) {
+            return ">=";
+        }
+
+        return "?";
+    }
 }
