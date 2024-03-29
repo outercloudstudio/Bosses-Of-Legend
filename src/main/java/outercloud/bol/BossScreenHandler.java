@@ -17,7 +17,7 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
-import outercloud.bol.goals.GoalSerializer;
+import outercloud.bol.goals.GoalDeserializers;
 import outercloud.bol.mixinBridge.MobEntityMixinBridge;
 import outercloud.bol.packets.*;
 
@@ -86,7 +86,7 @@ public class BossScreenHandler extends ScreenHandler {
             compound.putString("name", goal.getClass().getSimpleName());
             compound.putBoolean("original", ((MobEntityMixinBridge) entity).getGoalIsOriginal(prioritizedGoal));
 
-            NbtCompound data = GoalSerializer.serialize(prioritizedGoal);
+            NbtCompound data = GoalDeserializers.serialize(prioritizedGoal);
 
             compound.put("data", data);
             compound.putString("identifier", data.getString("identifier"));

@@ -6,8 +6,12 @@ import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.TextWidget;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.text.Text;
 import outercloud.bol.BossScreen;
+import outercloud.bol.BossesOfLegend;
+import outercloud.bol.goals.conditions.ConditionUIs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,6 +87,17 @@ public class OpenGoalScreen {
         add(inputWidget);
 
         nextY += inputWidget.getHeight() + 4;
+    }
+
+    public void addConditionGroup() {
+        NbtList nbtList = nbt.getCompound("data").getList("conditionGroup", NbtElement.COMPOUND_TYPE);
+
+        add(new TextWidget(screen.width / 2 - 64, nextY, 120, 18, Text.of("Conditions:"), screen.getTextRenderer())).alignLeft();
+        nextY += 18;
+
+        for(int index = 0; index < nbtList.size(); index++) {
+            ConditionUIs.create(this, nbtList.getCompound(index));
+        }
     }
 
     public void destroy() {

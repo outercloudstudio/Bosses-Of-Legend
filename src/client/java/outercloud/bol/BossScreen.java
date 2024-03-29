@@ -16,7 +16,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import org.apache.commons.lang3.NotImplementedException;
 import org.lwjgl.glfw.GLFW;
-import outercloud.bol.goals.OpenGoalUIRegistry;
+import outercloud.bol.goals.OpenGoalUIs;
 import outercloud.bol.goals.OpenGoalScreen;
 import outercloud.bol.mixin.client.ScreenMixin;
 import outercloud.bol.packets.*;
@@ -145,7 +145,7 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
     private void createGoalScreen(int index) {
         OpenGoalScreen openGoalScreen = new OpenGoalScreen(this, goals.get(index), index);
 
-        OpenGoalUIRegistry.create(openGoalScreen);
+        OpenGoalUIs.create(openGoalScreen);
 
         openGoalScreen.add(ButtonWidget.builder(Text.of("Back"), widget -> {
             destroyGoalScreen();

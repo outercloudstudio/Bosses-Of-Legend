@@ -1,21 +1,16 @@
 package outercloud.bol.goals;
 
-import com.mojang.datafixers.types.Func;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.goal.PrioritizedGoal;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
-import outercloud.bol.BossScreenHandler;
 import outercloud.bol.BossesOfLegend;
 
 import java.util.HashMap;
-import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
-public class GoalSerializer {
+public class GoalDeserializers {
     private static HashMap<Identifier, BiFunction<MobEntity, NbtCompound, SerializableGoal>> deserializerRegistry = new HashMap<>();
 
     public static void register(Identifier identifier, BiFunction<MobEntity, NbtCompound, SerializableGoal> deserializer) {

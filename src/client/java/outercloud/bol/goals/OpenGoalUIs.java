@@ -7,7 +7,7 @@ import net.minecraft.util.Identifier;
 import java.util.HashMap;
 import java.util.function.Consumer;
 
-public class OpenGoalUIRegistry {
+public class OpenGoalUIs {
     private static HashMap<Identifier, Consumer<OpenGoalScreen>> registry = new HashMap<>();
 
     public static void register(Identifier identifier, Consumer<OpenGoalScreen> ui) {

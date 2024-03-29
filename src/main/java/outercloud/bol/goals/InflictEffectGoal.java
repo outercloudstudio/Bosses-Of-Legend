@@ -6,9 +6,11 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
+import outercloud.bol.goals.conditions.ConditionGroup;
 
 import java.util.EnumSet;
 
@@ -22,14 +24,16 @@ public class InflictEffectGoal extends Goal implements SerializableGoal {
     private String command;
     private int duration;
     private int amplifier;
+    private ConditionGroup conditionGroup;
 
-    public InflictEffectGoal(MobEntity mob, Identifier effect, int chance, String command, int duration, int amplifier) {
+    public InflictEffectGoal(MobEntity mob, Identifier effect, int chance, String command, int duration, int amplifier, ConditionGroup conditionGroup) {
         this.mob = mob;
         this.effect = effect;
         this.chance = chance;
         this.command = command;
         this.duration = duration;
         this.amplifier = amplifier;
+        this.conditionGroup = conditionGroup;
 
         setControls(EnumSet.of(Goal.Control.MOVE, Goal.Control.LOOK));
     }
@@ -54,7 +58,7 @@ public class InflictEffectGoal extends Goal implements SerializableGoal {
 
         MinecraftServer server = mob.getServer();
 
-        server.getCommandManager().executeWithPrefix(server.getCommandSource().withEntity(mob).withLevel(4), command);
+        if(!command.isEmpty()) server.getCommandManager().executeWithPrefix(server.getCommandSource().withEntity(mob).withLevel(4), command);
     }
 
     @Override
@@ -75,11 +79,12 @@ public class InflictEffectGoal extends Goal implements SerializableGoal {
         nbt.putString("command", command);
         nbt.putInt("duration", duration);
         nbt.putInt("amplifier", amplifier);
+        nbt.put("conditionGroup", this.conditionGroup.serialize());
 
         return nbt;
     }
 
     public static SerializableGoal deserialize(MobEntity mobEntity, NbtCompound nbt) {
-        return new InflictEffectGoal(mobEntity, new Identifier(nbt.getString("effect")), nbt.getInt("chance"), nbt.getString("command"), nbt.getInt("duration"), nbt.getInt("amplifier"));
+        return new InflictEffectGoal(mobEntity, new Identifier(nbt.getString("effect")), nbt.getInt("chance"), nbt.getString("command"), nbt.getInt("duration"), nbt.getInt("amplifier"), new ConditionGroup(nbt.getList("conditionGroup", NbtElement.COMPOUND_TYPE)));
     }
 }
