@@ -43,7 +43,7 @@ public class InflictEffectGoal extends Goal implements SerializableGoal {
         if (mob.getRandom().nextInt(toGoalTicks(Math.max(chance, 1))) != 0) return false;
 
         LivingEntity livingEntity = mob.getTarget();
-        return livingEntity != null && livingEntity.isAlive() && mob.canTarget(livingEntity);
+        return livingEntity != null && livingEntity.isAlive() && mob.canTarget(livingEntity) && conditionGroup.allPasses(mob);
     }
 
     @Override
