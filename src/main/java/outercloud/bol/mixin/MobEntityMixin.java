@@ -38,11 +38,6 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 
 		GoalSelector goalSelector = getGoalSelector();
 
-		ConditionGroup conditionGroup = new ConditionGroup();
-		conditionGroup.add(new HealthCondition(10, HealthCondition.Operator.LessThan));
-
-		goalSelector.add(1, new InflictEffectGoal(me, new Identifier("slowness"), 100, "", 1, 1, conditionGroup));
-
 		originalGoals.addAll(goalSelector.getGoals());
 	}
 
