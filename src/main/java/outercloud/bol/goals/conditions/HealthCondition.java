@@ -15,8 +15,8 @@ public class HealthCondition implements Condition {
 
     public static Identifier IDENTIFIER = new Identifier("bol", "health_condition");
 
-    private float limit;
-    private Operator operator;
+    public float limit;
+    public Operator operator;
 
     public HealthCondition(float limit, Operator operator) {
         this.limit = limit;
@@ -25,11 +25,31 @@ public class HealthCondition implements Condition {
 
     @Override
     public boolean passes(MobEntity entity) {
-        return entity.getHealth() < 10;
+        if(operator == Operator.LessThan) {
+            return entity.getHealth() < limit;
+        }
+
+        if(operator == Operator.LessThanEqual) {
+            return entity.getHealth() <= limit;
+        }
+
+        if(operator == Operator.Equal) {
+            return entity.getHealth() == limit;
+        }
+
+        if(operator == Operator.GreaterThan) {
+            return entity.getHealth() > limit;
+        }
+
+        if(operator == Operator.GreaterThanEqual) {
+            return entity.getHealth() >= limit;
+        }
+
+        return false;
     }
 
     @Override
-    public NbtCompound serialize() {
+    public NbtCompound serialize() {//
         NbtCompound nbt = new NbtCompound();
 
         nbt.putString("identifier", IDENTIFIER.toString());

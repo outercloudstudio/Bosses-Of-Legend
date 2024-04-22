@@ -73,11 +73,7 @@ public class OpenGoalScreen {
         inputWidget.setTextPredicate(text -> text.isEmpty() || Arrays.stream(text.split("")).filter("0123456789"::contains).toList().size() == text.length());
 
         inputWidget.setChangedListener(text -> {
-            if(text.isEmpty()) {
-                inputWidget.setText("0");
-
-                return;
-            }
+            if(text.isEmpty())  text = "0";
 
             nbt.getCompound("data").putInt(key, Integer.parseInt(text));
 
@@ -96,7 +92,7 @@ public class OpenGoalScreen {
         nextY += 18;
 
         for(int index = 0; index < nbtList.size(); index++) {
-            ConditionUIs.create(this, nbtList.getCompound(index));
+            ConditionUIs.create(this, nbtList.getCompound(index), index);
         }
     }
 
