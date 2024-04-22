@@ -33,7 +33,7 @@ public class BossesOfLegendClient implements ClientModInitializer {
 		});
 
 		ConditionUIs.register(HealthCondition.IDENTIFIER, (goalScreen, nbt, index) -> {
-			goalScreen.add(new TextWidget(goalScreen.screen.width / 2 - 64, goalScreen.nextY + 1, 64, 18, Text.of("Health"), goalScreen.screen.getTextRenderer())).alignLeft();
+			goalScreen.addConditionElement(new TextWidget(goalScreen.screen.width / 2 - 64, goalScreen.nextY + 1, 64, 18, Text.of("Health"), goalScreen.screen.getTextRenderer())).alignLeft();
 
 			HealthCondition healthCondition = (HealthCondition) ConditionDeserializers.deserialize(nbt);
 
@@ -60,7 +60,7 @@ public class BossesOfLegendClient implements ClientModInitializer {
 				goalScreen.screen.editGoal(goalScreen.nbt.getCompound("data"), goalScreen.index);
 			}).dimensions(goalScreen.screen.width / 2 - 64 + 36, goalScreen.nextY, 18, 18).build();
 
-			goalScreen.add(operatorButton);
+			goalScreen.addConditionElement(operatorButton);
 
 			TextFieldWidget healthInput = new TextFieldWidget(goalScreen.screen.getTextRenderer(), goalScreen.screen.width / 2 - 64 + 36 + 18 + 6, goalScreen.nextY + 1, 64, 16, Text.of(""));
 			healthInput.setText(String.valueOf(healthCondition.limit));
@@ -84,15 +84,21 @@ public class BossesOfLegendClient implements ClientModInitializer {
 
 				healthCondition.limit = Float.parseFloat(text);
 
-				BossesOfLegend.LOGGER.info(String.valueOf(goalScreen.nbt));
-
 				goalScreen.nbt.getCompound("data").getList("conditionGroup", NbtElement.COMPOUND_TYPE).set(index, healthCondition.serialize());
+
 				goalScreen.screen.editGoal(goalScreen.nbt.getCompound("data"), goalScreen.index);
 			});
 
-			goalScreen.add(healthInput);
+			goalScreen.addConditionElement(healthInput);
 
-			goalScreen.nextY += 18;
+			goalScreen.addConditionElement(ButtonWidget.builder(Text.of("X"), widget -> {
+				goalScreen.nbt.getCompound("data").getList("conditionGroup", NbtElement.COMPOUND_TYPE).remove((int)index);
+				goalScreen.screen.editGoal(goalScreen.nbt.getCompound("data"), goalScreen.index);
+
+				goalScreen.reloadConditionElements();
+			}).dimensions(goalScreen.screen.width / 2 + 64, goalScreen.nextY, 18, 18).build());
+
+			goalScreen.nextY += 20;
 		});
 	}
 }

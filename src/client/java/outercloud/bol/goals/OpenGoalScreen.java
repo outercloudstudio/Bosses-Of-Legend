@@ -118,8 +118,7 @@ public class OpenGoalScreen {
 
             screen.editGoal(nbt.getCompound("data"), index);
 
-            destroyConditionElements();
-            createConditionElements();
+            reloadConditionElements();
         }).dimensions(screen.width / 2 + 56 + 4, nextY, 16, 16).build());
 
         nextY += 24;
@@ -143,6 +142,11 @@ public class OpenGoalScreen {
         }
 
         nextY = conditionY;
+    }
+
+    public void reloadConditionElements() {
+        destroyConditionElements();
+        createConditionElements();
     }
 
     public void destroy() {
