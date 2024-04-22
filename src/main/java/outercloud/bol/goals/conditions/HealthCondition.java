@@ -13,7 +13,7 @@ public class HealthCondition implements Condition {
         GreaterThanEqual,
     }
 
-    public static Identifier IDENTIFIER = new Identifier("bol", "health_condition");
+    public static Identifier IDENTIFIER = new Identifier("bol", "health");
 
     public float limit;
     public Operator operator;
@@ -72,6 +72,8 @@ public class HealthCondition implements Condition {
     }
 
     public static Condition deserialize(NbtCompound nbt) {
+        if(nbt.contains("DEFAULT")) return new HealthCondition(10, Operator.LessThan);
+
         float limit = nbt.getFloat("limit");
 
         Operator operator = Operator.LessThan;
