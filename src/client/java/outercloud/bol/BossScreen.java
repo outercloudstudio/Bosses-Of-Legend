@@ -47,7 +47,9 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
 
     @Override
     protected void init() {
+        if(this.goals == null) return;
 
+        createGoalListScreen();
     }
 
     @Override
