@@ -40,6 +40,7 @@ public class BossScreenHandler extends ScreenHandler {
         ServerPlayNetworking.registerReceiver(player.networkHandler, DeleteGoalPacket.TYPE, this::receiveDeleteGoal);
         ServerPlayNetworking.registerReceiver(player.networkHandler, ConvertGoalPacket.TYPE, this::receiveConvertGoal);
         ServerPlayNetworking.registerReceiver(player.networkHandler, EditGoalPacket.TYPE, this::receiveEditGoal);
+        ServerPlayNetworking.registerReceiver(player.networkHandler, AddGoalPacket.TYPE, this::receiveAddGoal);
     }
 
     public BossScreenHandler(int syncId, PlayerInventory playerInventory) {
@@ -70,6 +71,7 @@ public class BossScreenHandler extends ScreenHandler {
         ServerPlayNetworking.unregisterReceiver(this.player.networkHandler, DeleteGoalPacket.TYPE);
         ServerPlayNetworking.unregisterReceiver(this.player.networkHandler, ConvertGoalPacket.TYPE);
         ServerPlayNetworking.unregisterReceiver(this.player.networkHandler, EditGoalPacket.TYPE);
+        ServerPlayNetworking.unregisterReceiver(this.player.networkHandler, AddGoalPacket.TYPE);
     }
 
     private void sendData(ServerPlayerEntity player) {
@@ -121,5 +123,11 @@ public class BossScreenHandler extends ScreenHandler {
         GoalSelector goalSelector = ((MobEntityMixinBridge) entity).getGoalSelector();
 
         ((MobEntityMixinBridge) entity).editGoal(packet.nbt, goalSelector.getGoals().stream().toList().get(packet.index));
+    }
+
+    private void receiveAddGoal(AddGoalPacket packet, ServerPlayerEntity player, PacketSender responseSender) {
+        ((MobEntityMixinBridge) entity).addGoal(packet.identifier);
+
+        sendData(player);
     }
 }

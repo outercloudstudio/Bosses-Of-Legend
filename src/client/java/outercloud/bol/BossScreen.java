@@ -10,12 +10,15 @@ import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.ai.goal.PrioritizedGoal;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import org.apache.commons.lang3.NotImplementedException;
 import org.lwjgl.glfw.GLFW;
+import outercloud.bol.goals.GoalDeserializers;
 import outercloud.bol.goals.OpenGoalUIs;
 import outercloud.bol.goals.OpenGoalScreen;
 import outercloud.bol.mixin.client.ScreenMixin;
@@ -55,7 +58,7 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
     }
 
     private void receiveData(BossScreenDataPacket packet, ClientPlayerEntity player, PacketSender responseSender) {
-        this.goals = packet.goals;
+        goals = packet.goals;
 
         createGoalListScreen();
     }
@@ -64,7 +67,7 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
         if(goalListStartingIndex < 0) goalListStartingIndex = 0;
         if(goalListStartingIndex >= goals.size()) goalListStartingIndex = goals.size() - 1;
 
-        int goalsBoxHeight = height - 32;
+        int goalsBoxHeight = height - 56;
         int maxGoalsFit = Math.max(goalsBoxHeight / 18, 1);
         int goalsFit = Math.min(maxGoalsFit, goals.size() - goalListStartingIndex);
         int goalsBoxStart = 16;
@@ -114,6 +117,15 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
 
             goalsBoxStart += 18;
         }
+
+        TextFieldWidget addTextField = new TextFieldWidget(getTextRenderer(), width / 2 - 64 - 8, goalsBoxStart, 128, 16, Text.of(""));
+        goalListScreenElements.add(addDrawableChild(addTextField));
+
+        goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of("+"), widget -> {
+            addGoal(addTextField.getText());
+        }).dimensions(width / 2 + 56 + 4, goalsBoxStart, 16, 16).build()));
+
+        goalsBoxStart += 24;
 
         goalListScreenElements.add(addDrawableChild(ButtonWidget.builder(Text.of("Done"), widget -> {
             close();
@@ -212,5 +224,9 @@ public class BossScreen extends HandledScreen<BossScreenHandler> {
         }
 
         return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    private void addGoal(String identifier) {
+        ClientPlayNetworking.send(new AddGoalPacket(identifier));
     }
 }

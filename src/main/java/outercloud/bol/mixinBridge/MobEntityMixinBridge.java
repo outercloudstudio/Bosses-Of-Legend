@@ -15,5 +15,5 @@ public interface MobEntityMixinBridge {
 
     void editGoal(NbtCompound nbt, PrioritizedGoal prioritizedGoal);
 
-    void addGoal(PrioritizedGoal prioritizedGoal);
+    void addGoal(String identifier);
 }

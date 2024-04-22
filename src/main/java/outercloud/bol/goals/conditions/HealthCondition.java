@@ -49,7 +49,7 @@ public class HealthCondition implements Condition {
     }
 
     @Override
-    public NbtCompound serialize() {//
+    public NbtCompound serialize() {
         NbtCompound nbt = new NbtCompound();
 
         nbt.putString("identifier", IDENTIFIER.toString());

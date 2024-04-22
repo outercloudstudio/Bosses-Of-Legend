@@ -10,6 +10,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
+import outercloud.bol.BossesOfLegend;
 import outercloud.bol.goals.conditions.ConditionGroup;
 
 import java.util.EnumSet;
@@ -85,6 +86,8 @@ public class InflictEffectGoal extends Goal implements SerializableGoal {
     }
 
     public static SerializableGoal deserialize(MobEntity mobEntity, NbtCompound nbt) {
+        if(nbt.contains("DEFAULT")) return new InflictEffectGoal(mobEntity, new Identifier("slowness"), 100, "", 1, 1, new ConditionGroup());
+
         return new InflictEffectGoal(mobEntity, new Identifier(nbt.getString("effect")), nbt.getInt("chance"), nbt.getString("command"), nbt.getInt("duration"), nbt.getInt("amplifier"), new ConditionGroup(nbt.getList("conditionGroup", NbtElement.COMPOUND_TYPE)));
     }
 }

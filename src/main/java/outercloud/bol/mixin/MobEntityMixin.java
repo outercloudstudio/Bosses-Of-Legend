@@ -162,7 +162,17 @@ public abstract class MobEntityMixin implements MobEntityMixinBridge {
 	}
 
 	@Override
-	public void addGoal(PrioritizedGoal prioritizedGoal) {
+	public void addGoal(String identifier) {
+		NbtCompound nbt = new NbtCompound();
+		nbt.put("data", new NbtCompound());
+		nbt.putBoolean("DEFAULT", true);
+		nbt.putString("identifier", identifier);
+		nbt.putInt("priority", 1);
+
+		PrioritizedGoal prioritizedGoal = GoalDeserializers.deserialize((MobEntity) (Object) this, nbt);
+
+		if(prioritizedGoal == null) return;
+
 		customGoals.add(prioritizedGoal);
 
 		GoalSelector goalSelector = getGoalSelector();
